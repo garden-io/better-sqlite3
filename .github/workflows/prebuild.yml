@@ -1,7 +1,4 @@
-on:
-  push:
-    tags:
-      - 'v*'
+on: [push]
 
 name: Prebuild
 
@@ -21,13 +18,17 @@ jobs:
       - run: npm install
       - name: build release
         run: |
-          npx prebuild -r node -t 10.20.0 -t 12.0.0 -t 14.0.0 --include-regex 'better_sqlite3.node$' -u ${{ secrets.GITHUB_TOKEN }}
+          node_modules/.bin/prebuild -r node -t 10.22.0 -t 12.0.0 -t 14.0.0 --include-regex 'better_sqlite3.node$'
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: prebuilds-${{ matrix.os }}
+          path: prebuilds/**/*
 
   prebuild-electron:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # os: [windows-latest]
         os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
@@ -40,5 +41,10 @@ jobs:
       - run: npm run build-release
       - name: create prebuild
         run: |
-          npx prebuild -r electron -t 7.0.0 -t 8.0.0 -t 9.0.0 --include-regex 'better_sqlite3.node$'  -u ${{ secrets.GITHUB_TOKEN }}
-        # npx prebuild -r electron -t 9.0.0 --include-regex 'better_sqlite3.node$' --arch x86 -u ${{ secrets.GITHUB_TOKEN }}
+          node_modules/.bin/prebuild -r electron -t 7.0.0 -t 8.0.0 -t 9.0.0 --include-regex 'better_sqlite3.node$'
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: prebuilds-electron-${{ matrix.os }}
+          path: prebuilds/**/*
+
